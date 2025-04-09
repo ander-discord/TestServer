@@ -74,6 +74,7 @@ wss.on('connection', function connection(ws) {
             }
 
             if (data.type === 'systemIncrement') {
+                count = data.set;
                 broadcast({
                     type: 'update',
                     count: data.set,
