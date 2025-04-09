@@ -77,7 +77,7 @@ wss.on('connection', function connection(ws) {
                 count++;
                 broadcast({
                     type: 'update',
-                    count,
+                    data.set,
                     from: "system"
                 });
             }
