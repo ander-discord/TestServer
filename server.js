@@ -32,7 +32,6 @@ wss.on('connection', function connection(ws) {
                 return;
             }
 
-            // --- Authenticate with token ---
             if (data.type === 'auth_token') {
                 const userData = users.get(data.token);
                 if (userData) {
