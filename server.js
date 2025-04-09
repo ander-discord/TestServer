@@ -17,6 +17,9 @@ wss.on('connection', function connection(ws) {
 });
 
 const PORT = process.env.PORT || 3000;
+const host = process.env.URL || `localhost`;  
+const wsUrl = `wss://${host}:${PORT}`; 
+
 server.listen(PORT, () => {
-    console.log(`Chat server running on http://localhost:${PORT}`);
+    console.log(`Chat server running on ${wsUrl}`);
 });
