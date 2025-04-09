@@ -9,7 +9,14 @@ let count = 0;
 const users = new Map(); 
 
 function generateToken() {
-  return crypto.randomBytes(16).toString('hex');
+  return crypto.randomBytes(128).toString('hex');
+}
+
+function isUsernameTaken(name) {
+  for (const user of users.values()) {
+    if (user.username === name) return true;
+  }
+  return false;
 }
 
 wss.on('connection', function connection(ws) {
@@ -22,14 +29,19 @@ wss.on('connection', function connection(ws) {
             const data = JSON.parse(message);
 
             if (data.type === 'create_account') {
-                const token = generateToken();
-                const username = data.username || "guest";
-
-                users.set(token, { username });
-                ws.send(JSON.stringify({ type: 'account_created', token }));
-                user = { username, token };
-                console.log(`[NEW ACCOUNT] ${username}`);
+              const username = data.username || "guest";
+            
+              if (isUsernameTaken(username)) {
+                ws.send(JSON.stringify({ type: 'account_error', message: 'Username already taken!' }));
                 return;
+              }
+            
+              const token = generateToken();
+              users.set(token, { username });
+              ws.send(JSON.stringify({ type: 'account_created', token }));
+              user = { username, token };
+              console.log(`[NEW ACCOUNT] ${username}`);
+              return;
             }
 
             if (data.type === 'auth_token') {
