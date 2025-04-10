@@ -10,36 +10,16 @@ const wss = new WebSocket.Server({ server });
 let count = 0;
 const users = new Map(); 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-if (fs.existsSync(DATA_FILE)) {
-  try {
-    const data = JSON.parse(fs.readFileSync(DATA_FILE));
-    count = data.count || 0;
-    if (data.users) {
-      for (const [token, userData] of Object.entries(data.users)) {
-        users.set(token, userData);
-      }
-    }
-    console.log('[DATA LOADED]');
-  } catch (err) {
-    console.error('Failed to load data:', err);
-  }
-}
-
 function saveData() {
   const data = {
     count,
     users: Object.fromEntries(users)
   };
-  fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), err => {
-    if (err) console.error('Failed to save data:', err);
-  });
+  console.log(data  )
 }
 setInterval(() => {
   saveData();
 }, 10000);
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 async function filterBadWords(text) {
   try {
