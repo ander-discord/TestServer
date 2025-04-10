@@ -74,7 +74,7 @@ wss.on('connection', function connection(ws) {
 
             if (data.type === 'create_account') {
               const rawUsername = data.username || "guest";
-              const username = filterBadWords(username);
+              const username = filterBadWords(rawUsername); 
             
               if (isUsernameTaken(username) || username.includes('*')) {
                 ws.send(JSON.stringify({ type: 'account_error', message: 'Username already taken or inappropriate!' }));
