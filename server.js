@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 
 const server = http.createServer();
-const DATA_FILE = 'data.json';
+const DATA_FILE = 'ClickFunny.json';
 const wss = new WebSocket.Server({ server });
 
 let count = 0;
