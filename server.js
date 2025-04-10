@@ -1,12 +1,45 @@
 const WebSocket = require('ws');
 const http = require('http');
 const crypto = require('crypto');
+const fs = require('fs');
 
 const server = http.createServer();
+const DATA_FILE = 'data.json';
 const wss = new WebSocket.Server({ server });
 
 let count = 0;
 const users = new Map(); 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+if (fs.existsSync(DATA_FILE)) {
+  try {
+    const data = JSON.parse(fs.readFileSync(DATA_FILE));
+    count = data.count || 0;
+    if (data.users) {
+      for (const [token, userData] of Object.entries(data.users)) {
+        users.set(token, userData);
+      }
+    }
+    console.log('[DATA LOADED]');
+  } catch (err) {
+    console.error('Failed to load data:', err);
+  }
+}
+
+function saveData() {
+  const data = {
+    count,
+    users: Object.fromEntries(users)
+  };
+  fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), err => {
+    if (err) console.error('Failed to save data:', err);
+  });
+}
+setInterval(() => {
+  saveData();
+}, 10000);
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function generateToken() {
   return crypto.randomBytes(128).toString('hex');
@@ -73,13 +106,26 @@ wss.on('connection', function connection(ws) {
                 });
             }
 
-            if (data.type === 'systemIncrement') {
+            if (data.type === 'systemSet') {
                 count = data.set;
                 broadcast({
                     type: 'update',
                     count: data.set,
                     from: "system"
                 });
+            }
+            if (data.type === 'ResetDataset') {
+                count = 0;
+                users.clear();
+                
+                broadcast({
+                    type: 'update',
+                    count,
+                    from: "system"
+                });
+                saveData();
+                
+                console.log('[DATASET RESET] All data has been reset');
             }
         } catch (err) {
             console.error("Failed to handle message:", err);
