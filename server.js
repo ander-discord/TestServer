@@ -41,6 +41,17 @@ setInterval(() => {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+async function filterBadWords(text) {
+  try {
+    const res = await fetch(`https://www.purgomalum.com/service/json?text=${encodeURIComponent(text)}`);
+    const json = await res.json();
+    return json.result || text;
+  } catch (err) {
+    console.error('Filter API failed:', err);
+    return text;
+  }
+}
+
 function generateToken() {
   return crypto.randomBytes(128).toString('hex');
 }
@@ -62,7 +73,8 @@ wss.on('connection', function connection(ws) {
             const data = JSON.parse(message);
 
             if (data.type === 'create_account') {
-              const username = data.username || "guest";
+              const rawUsername = data.username || "guest";
+              const username = filterBadWords(username);
             
               if (isUsernameTaken(username)) {
                 ws.send(JSON.stringify({ type: 'account_error', message: 'Username already taken!' }));
