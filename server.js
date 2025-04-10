@@ -44,17 +44,14 @@ function isUsernameTaken(name) {
 }
 
 wss.on('connection', function connection(ws) {
-    ws.send(JSON.stringify({ type: 'update', count }));
-
     let user = null;
-
-    ws.on('message', function incoming(message) {
+  ws.on('message', async function incoming(message) {
         try {
             const data = JSON.parse(message);
 
             if (data.type === 'create_account') {
               const rawUsername = data.username || "guest";
-              const username = String(filterBadWords(rawUsername));
+              const username = String(await filterBadWords(rawUsername));
               if (isUsernameTaken(username) || username.includes('*')) {
                 ws.send(JSON.stringify({ type: 'account_error', message: 'Username already taken or inappropriate!' }));
                 return;
@@ -72,6 +69,7 @@ wss.on('connection', function connection(ws) {
                 if (userData) {
                     user = userData;
                     ws.send(JSON.stringify({ type: 'auth_success' }));
+                    ws.send(JSON.stringify({ type: 'update', count }));
                     console.log(`[LOGIN] ${user.username}`);
                 } else {
                     ws.send(JSON.stringify({ type: 'auth_failed' }));
