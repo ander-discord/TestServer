@@ -1,11 +1,19 @@
 {
-  "name": "chat-server",
+  "name": "TestServer",
   "version": "1.0.0",
+  "description": "In Fact you not need read this lol",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "ws": "^8.0.0"
+  },
+  "files": [
+    "server.js",
+    "ClickFunny.json"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
   }
 }
