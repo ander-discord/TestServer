@@ -68,7 +68,7 @@ wss.on('connection', function connection(ws) {
                 const userData = users.get(data.token);
                 if (userData) {
                     user = userData;
-                    ws.send(JSON.stringify({ type: 'auth_success' }));
+                    ws.send(JSON.stringify({ type: 'auth_success', username: user.username }));
                     ws.send(JSON.stringify({ type: 'update', count }));
                     console.log(`[LOGIN] ${user.username}`);
                 } else {
