@@ -22,21 +22,19 @@ function loadData(jsonText) {
     console.error('[LOAD ERROR]', err);
   }
 }
-loadData(`
-{
-
-  count: 8,
-
-  users: {
-
-    'You cant login': { username: 'Test' }
-
+loadData(`{
+  "count": 0,
+  "users": {
+    "You cant login": { "username": "Test" },
+    "c6fab36fa521164c0fe9e3e00f9b8b6396732b34f483f6dc624e7c1af4b9bf9e97830758eeda4a84e9923356c63e258c187a2a57b1ad6b92463fbc270f07eb0e1bbbd8a9688fb076f4f549e614b15a4ad59639411602b2acae9c40aeca58c4a4e7c134b5581532c91fcea21bace96506855559fbd577d9b907457451cc4bafb4": { 
+        "username": "I can change your username lol" 
+      },
+    
+    "515af888190f179f416398d99d9de6d07bfb63d4d263467b400eab59e6c6ce8be71a05ce8c0a80ef322bd9b00b96b34d8817f526521221d21b449677dc45113cac10706a639b2581e93e34424c6507dbce58341c9d0c7e6c2ddc4dd6cf7024e805e35669f589e6e39ec5dc8a3fdb0ee5bf88b3eee02ef7bc3e6f6193d34c6d67": {
+      "username": "0"
+    }
   }
-
-    '515af888190f179f416398d99d9de6d07bfb63d4d263467b400eab59e6c6ce8be71a05ce8c0a80ef322bd9b00b96b34d8817f526521221d21b449677dc45113cac10706a639b2581e93e34424c6507dbce58341c9d0c7e6c2ddc4dd6cf7024e805e35669f589e6e39ec5dc8a3fdb0ee5bf88b3eee02ef7bc3e6f6193d34c6d67': { username: '0' },
-
-} 
-`)
+}`);
 
 function saveData() {
   const data = {
