@@ -4,11 +4,39 @@ const crypto = require('crypto');
 const fs = require('fs');
 
 const server = http.createServer();
-const DATA_FILE = 'ClickFunny.json';
 const wss = new WebSocket.Server({ server });
 
 let count = 0;
 const users = new Map(); 
+
+function loadData(jsonText) {
+  try {
+    const data = JSON.parse(jsonText);
+    count = data.count || 0;
+    users.clear();
+    for (const [token, user] of Object.entries(data.users || {})) {
+      users.set(token, user);
+    }
+    console.log('[DATA LOADED from text]');
+  } catch (err) {
+    console.error('[LOAD ERROR]', err);
+  }
+}
+loadData(`
+{
+
+  count: 8,
+
+  users: {
+
+    'You cant login': { username: 'Test' }
+
+  }
+
+    '515af888190f179f416398d99d9de6d07bfb63d4d263467b400eab59e6c6ce8be71a05ce8c0a80ef322bd9b00b96b34d8817f526521221d21b449677dc45113cac10706a639b2581e93e34424c6507dbce58341c9d0c7e6c2ddc4dd6cf7024e805e35669f589e6e39ec5dc8a3fdb0ee5bf88b3eee02ef7bc3e6f6193d34c6d67': { username: '0' },
+
+} 
+`)
 
 function saveData() {
   const data = {
@@ -101,6 +129,19 @@ wss.on('connection', function connection(ws) {
                     count: data.set,
                     from: "system"
                 });
+            }
+            if (data.type === 'deleteAccount') {
+              const userData = users.get(data.token);
+              if (!userData) {
+                ws.send(JSON.stringify({ type: 'auth_failed' }));
+                return;
+              }
+              
+              const deletedUsername = userData.username;
+              users.delete(data.token);
+              ws.send(JSON.stringify({ type: 'account_deleted' }));
+               console.log(`[ACCOUNT DELETED] ${deletedUsername}`);
+               return;
             }
             if (data.type === 'ResetDataset') {
                 count = 0;
