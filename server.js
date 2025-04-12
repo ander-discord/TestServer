@@ -8,6 +8,7 @@ const wss = new WebSocket.Server({ server });
 
 let count = 0;
 let last_click = "Nobody";
+let last_joke = type: 'single', joke: 'No joke.';
 const users = new Map(); 
 
 function loadData(jsonText) {
@@ -96,7 +97,7 @@ wss.on('connection', function connection(ws) {
                 if (userData) {
                     user = userData;
                     ws.send(JSON.stringify({ type: 'auth_success', username: user.username }));
-                    ws.send(JSON.stringify({ type: 'update', count, from: last_click }));
+                    ws.send(JSON.stringify({ type: 'update', count, from: last_click, joke: last_joke }));
                     console.log(`[LOGIN] ${user.username}`);
                 } else {
                     ws.send(JSON.stringify({ type: 'auth_failed' }));
@@ -114,11 +115,23 @@ wss.on('connection', function connection(ws) {
                 user = userData;
                 last_click = user.username;
                 count++;
+              
+                if (Math.round(Date.now() / 100) % 5 == 0) {
+                  try {
+                    const response = await fetch('https://v2.jokeapi.dev/joke/Any?type=single');
+                    const json = await response.json();
+                    last_joke = json;
+                  } catch (error) {
+                    console.error('Error fetching joke:', error);
+                    last_joke = { type: 'single', joke: 'Failed to load joke.' };
+                  }
+                }
                 
                 broadcast({
                     type: 'update',
                     count,
-                    from: last_click
+                    from: last_click,
+                    joke: last_joke
                 });
             }
 
