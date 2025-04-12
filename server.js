@@ -11,6 +11,20 @@ let last_click = "Nobody";
 let last_joke = {type: 'single', joke: 'No joke.'};
 const users = new Map(); 
 
+async function fetchJoke() {
+  try {
+    const response = await fetch('https://v2.jokeapi.dev/joke/Any?type=single');
+    const json = await response.json();
+    last_joke = json;
+    console.log('Fetched joke:', last_joke.joke);
+  } catch (error) {
+    console.error('Error fetching joke:', error);
+    last_joke = { type: 'single', joke: 'Failed to load joke.' };
+  }
+}
+
+setInterval(fetchJoke, 5000);
+
 function loadData(jsonText) {
   try {
     const data = JSON.parse(jsonText);
@@ -25,16 +39,14 @@ function loadData(jsonText) {
   }
 }
 loadData(`{
-  "count": 0,
-  "users": {
-    "You cant login": { "username": "Test" },
-    "c6fab36fa521164c0fe9e3e00f9b8b6396732b34f483f6dc624e7c1af4b9bf9e97830758eeda4a84e9923356c63e258c187a2a57b1ad6b92463fbc270f07eb0e1bbbd8a9688fb076f4f549e614b15a4ad59639411602b2acae9c40aeca58c4a4e7c134b5581532c91fcea21bace96506855559fbd577d9b907457451cc4bafb4": { 
-        "username": "I can change your username lol" 
-      },
-    
-    "515af888190f179f416398d99d9de6d07bfb63d4d263467b400eab59e6c6ce8be71a05ce8c0a80ef322bd9b00b96b34d8817f526521221d21b449677dc45113cac10706a639b2581e93e34424c6507dbce58341c9d0c7e6c2ddc4dd6cf7024e805e35669f589e6e39ec5dc8a3fdb0ee5bf88b3eee02ef7bc3e6f6193d34c6d67": {
-      "username": "0"
-    }
+  count: 303,
+
+  users: {
+
+    'really random token': { username: 'Test' },
+    '515af888190f179f416398d99d9de6d07bfb63d4d263467b400eab59e6c6ce8be71a05ce8c0a80ef322bd9b00b96b34d8817f526521221d21b449677dc45113cac10706a639b2581e93e34424c6507dbce58341c9d0c7e6c2ddc4dd6cf7024e805e35669f589e6e39ec5dc8a3fdb0ee5bf88b3eee02ef7bc3e6f6193d34c6d67': { username: 'ander' },
+    '12870030325803f52d5305e5c9b941da211e9e8fe035d16a38667ef00511342da04d3b7ecc98dc1b907e2a40aeaf540770a340aa499cf94503b8d498497fe2ad184ebb44e826bd53501d5d1f8cfef7f78fab7217ac0933dcdb9d09d8ee71c869793eb3835cc2873b0b9fc559f0493034323a077bfec89f895f32d3f800252415': { username: 'asd' }
+
   }
 }`);
 
@@ -115,17 +127,6 @@ wss.on('connection', function connection(ws) {
                 user = userData;
                 last_click = user.username;
                 count++;
-              
-                if (Math.round(Date.now() / 100) % 5 == 0) {
-                  try {
-                    const response = await fetch('https://v2.jokeapi.dev/joke/Any?type=single');
-                    const json = await response.json();
-                    last_joke = json;
-                  } catch (error) {
-                    console.error('Error fetching joke:', error);
-                    last_joke = { type: 'single', joke: 'Failed to load joke.' };
-                  }
-                }
                 
                 broadcast({
                     type: 'update',
@@ -140,7 +141,7 @@ wss.on('connection', function connection(ws) {
                 broadcast({
                     type: 'update',
                     count: data.set,
-                    from: "system"
+                    from: last_click
                 });
             }
             if (data.type === 'deleteAccount') {
