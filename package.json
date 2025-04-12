@@ -2,16 +2,15 @@
   "name": "TestServer",
   "version": "1.0.0",
   "description": "In Fact you not need read this lol",
-  "main": "server.js",
+  "main": "testmmo.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node testmmo.js"
   },
   "dependencies": {
     "ws": "^8.0.0"
   },
   "files": [
-    "server.js",
-    "ClickFunny.json"
+    "testmmo.js",
   ],
   "engines": {
     "node": ">=14.0.0"
