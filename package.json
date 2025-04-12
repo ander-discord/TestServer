@@ -9,9 +9,6 @@
   "dependencies": {
     "ws": "^8.0.0"
   },
-  "files": [
-    "testmmo.js",
-  ],
   "engines": {
     "node": ">=14.0.0"
   }
