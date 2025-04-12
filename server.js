@@ -8,7 +8,7 @@ const wss = new WebSocket.Server({ server });
 
 let count = 0;
 let last_click = "Nobody";
-let last_joke = "type: 'single', joke: 'No joke.'";
+let last_joke = {type: 'single', joke: 'No joke.'};
 const users = new Map(); 
 
 function loadData(jsonText) {
