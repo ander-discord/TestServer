@@ -13,7 +13,7 @@ const users = new Map();
 
 async function fetchJoke() {
   try {
-    const response = await fetch('https://v2.jokeapi.dev/joke/Any?type=single');
+    const response = await fetch('https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,religious,political,racist,sexist,explicit');
     const json = await response.json();
     last_joke = json;
     console.log('Fetched joke:', last_joke.joke);
