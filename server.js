@@ -7,8 +7,8 @@ const server = http.createServer();
 const wss = new WebSocket.Server({ server });
 
 let count = 0;
+let last_click = "Nobody";
 const users = new Map(); 
-const last_click = "Nobody";
 
 function loadData(jsonText) {
   try {
