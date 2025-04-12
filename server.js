@@ -8,6 +8,7 @@ const wss = new WebSocket.Server({ server });
 
 let count = 0;
 const users = new Map(); 
+const last_click = "Nobody";
 
 function loadData(jsonText) {
   try {
@@ -95,7 +96,7 @@ wss.on('connection', function connection(ws) {
                 if (userData) {
                     user = userData;
                     ws.send(JSON.stringify({ type: 'auth_success', username: user.username }));
-                    ws.send(JSON.stringify({ type: 'update', count }));
+                    ws.send(JSON.stringify({ type: 'update', count, from: last_click }));
                     console.log(`[LOGIN] ${user.username}`);
                 } else {
                     ws.send(JSON.stringify({ type: 'auth_failed' }));
@@ -111,12 +112,13 @@ wss.on('connection', function connection(ws) {
                 }
             
                 user = userData;
+                last_click = user.username;
                 count++;
-            
+                
                 broadcast({
                     type: 'update',
                     count,
-                    from: user.username
+                    from: last_click
                 });
             }
 
