@@ -2,9 +2,9 @@
   "name": "TestServer",
   "version": "1.0.0",
   "description": "In Fact you not need read this lol",
-  "main": "testmmo.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node testmmo.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "ws": "^8.0.0"
