@@ -123,7 +123,7 @@ wss.on('connection', function connection(ws) {
             
                 user = userData;
                 last_click = user.username;
-                count++;
+                count = count + data.add;
                 
                 broadcast({
                     type: 'update',
