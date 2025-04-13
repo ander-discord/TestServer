@@ -10,7 +10,7 @@ let count = 0;
 let last_click = "Nobody";
 let last_joke = {type: 'single', joke: 'No joke.'};
 const users = new Map();
-const positions = [ [0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1] ];
+let positions = [ [0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1] ];
 
 async function fetchGod() {
   try {
