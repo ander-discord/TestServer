@@ -7,19 +7,56 @@ const server = http.createServer();
 const wss = new WebSocket.Server({ server });
 
 let count = 0;
+let last_count = 0;
 let last_click = "Nobody";
-let last_joke = {type: 'single', joke: 'No joke.'};
+let last_msg = "No message";
+let keyapi = "AIzaSyA89N0RBFDKDWIrnsvFHdnExdnKZHN0HAg";
+
 const users = new Map();
 
 async function fetchGod() {
-  try {
-    const response = await fetch('https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,religious,political,racist,sexist,explicit');
-    const json = await response.json();
-    last_joke = json;
-    console.log('Fetched joke:', last_joke.joke);
-  } catch (error) {
-    console.error('Error fetching joke:', error);
-    last_joke = { type: 'single', joke: 'Failed to load joke.' };
+  if (last_count !== count) {
+    console.log("Fetching new message from API...");
+    
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${keyapi}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept-Language": "en"
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `You are a voice of a game, a self-aware antagonist trying to prevent the players from reaching a goal.
+                      If the players succeed, you will be destroyed.
+                      The players are currently at ${count} of 10000000 clicks,
+                      with ${10000000 - count} left to go.
+                      You must create a unique, snarky, antagonizing message that reflects your confidence that the players won't beat`
+            }]
+          }]
+        })
+      });
+
+      if (!response.ok) {
+        console.error("API request failed with status:", response.status);
+        const errorText = await response.text();
+        throw new Error(errorText);
+      }
+
+      const data = await response.json();
+      if (data && data.choices && data.choices[0] && data.choices[0].text) {
+        last_msg = data.choices[0].text; 
+        console.log("New message from API:", last_msg);
+      } else {
+        console.log("Unexpected API response structure:", data);
+      }
+
+      last_count = count;
+
+    } catch (error) {
+      console.error("Error fetching message:", error);
+    }
   }
 }
 
@@ -106,7 +143,7 @@ wss.on('connection', function connection(ws) {
                 if (userData) {
                     user = userData;
                     ws.send(JSON.stringify({ type: 'auth_success', username: user.username }));
-                    ws.send(JSON.stringify({ type: 'update', count, from: last_click, joke: last_joke }));
+                    ws.send(JSON.stringify({ type: 'update', count, from: last_click, msg: last_msg }));
                     console.log(`[LOGIN] ${user.username}`);
                 } else {
                     ws.send(JSON.stringify({ type: 'auth_failed' }));
@@ -134,7 +171,7 @@ wss.on('connection', function connection(ws) {
                     type: 'update',
                     count,
                     from: last_click,
-                    joke: last_joke
+                    msg: last_msg
                 });
             }
 
