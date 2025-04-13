@@ -10,7 +10,6 @@ let count = 0;
 let last_click = "Nobody";
 let last_joke = {type: 'single', joke: 'No joke.'};
 const users = new Map();
-let positions = [ [0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1] ];
 
 async function fetchGod() {
   try {
@@ -124,7 +123,6 @@ wss.on('connection', function connection(ws) {
                 
                 user = userData;
                 last_click = user.username;
-                positions = data.pbuttons;
               
                 if (typeof data.add === 'number') {
                   count = count + data.add;
@@ -136,8 +134,7 @@ wss.on('connection', function connection(ws) {
                     type: 'update',
                     count,
                     from: last_click,
-                    joke: last_joke,
-                    pbuttons: positions
+                    joke: last_joke
                 });
             }
 
@@ -146,8 +143,7 @@ wss.on('connection', function connection(ws) {
                 broadcast({
                     type: 'update',
                     count: data.set,
-                    from: last_click,
-                    pbuttons: positions
+                    from: last_click
                 });
             }
             if (data.type === 'deleteAccount') {
@@ -165,14 +161,12 @@ wss.on('connection', function connection(ws) {
             }
             if (data.type === 'ResetDataset') {
                 count = 0;
-                positions = [ [0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1] ];
                 users.clear();
                 
                 broadcast({
                     type: 'update',
                     count,
-                    from: "system",
-                    pbuttons: positions
+                    from: "system"
                 });
                 saveData();
                 
