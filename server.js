@@ -15,7 +15,7 @@ let keyapi = "AIzaSyA89N0RBFDKDWIrnsvFHdnExdnKZHN0HAg";
 const users = new Map();
 
 async function fetchGod() {
-  if (last_count !== count && users.size > 0) {
+  if (last_count !== count) {
     console.log("Fetching new message from API...");
     
     try {
