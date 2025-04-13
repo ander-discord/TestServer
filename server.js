@@ -32,7 +32,8 @@ async function fetchGod() {
                       If the players succeed, you will be destroyed.
                       The players are currently at ${count} of 10000000 clicks,
                       with ${10000000 - count} left to go.
-                      You must create a unique, snarky, antagonizing message that reflects your confidence that the players won't beat them.`
+                      You must create a unique, snarky, antagonizing message that reflects your confidence that the players won't beat them.
+                      Rule 1: Your message Need small ( 150 letters )`
             }]
           }]
         })
