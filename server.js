@@ -120,11 +120,15 @@ wss.on('connection', function connection(ws) {
                     ws.send(JSON.stringify({ type: 'auth_failed' }));
                     return;
                 }
-            
+                
                 user = userData;
                 last_click = user.username;
-                count = count + data.add;
-                
+                if (typeof data.add === 'number') {
+                  count = count + data.add;
+                } else {
+                  count++;
+                }
+              
                 broadcast({
                     type: 'update',
                     count,
