@@ -15,7 +15,7 @@ let keyapi = "AIzaSyA89N0RBFDKDWIrnsvFHdnExdnKZHN0HAg";
 const users = new Map();
 
 async function fetchGod() {
-  if (last_count !== count) {
+  if (last_count !== count && users.size > 0) {
     console.log("Fetching new message from API...");
     
     try {
@@ -32,7 +32,7 @@ async function fetchGod() {
                       If the players succeed, you will be destroyed.
                       The players are currently at ${count} of 10000000 clicks,
                       with ${10000000 - count} left to go.
-                      You must create a unique, snarky, antagonizing message that reflects your confidence that the players won't beat`
+                      You must create a unique, snarky, antagonizing message that reflects your confidence that the players won't beat them.`
             }]
           }]
         })
@@ -45,8 +45,11 @@ async function fetchGod() {
       }
 
       const data = await response.json();
-      if (data && data.choices && data.choices[0] && data.choices[0].text) {
-        last_msg = data.choices[0].text; 
+      const candidate = data?.candidates?.[0];
+      const messageText = candidate?.content?.parts?.[0]?.text;
+
+      if (messageText) {
+        last_msg = messageText;
         console.log("New message from API:", last_msg);
       } else {
         console.log("Unexpected API response structure:", data);
