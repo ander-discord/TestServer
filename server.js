@@ -9,9 +9,10 @@ const wss = new WebSocket.Server({ server });
 let count = 0;
 let last_click = "Nobody";
 let last_joke = {type: 'single', joke: 'No joke.'};
-const users = new Map(); 
+const users = new Map();
+const positions = [ [0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1] ];
 
-async function fetchJoke() {
+async function fetchGod() {
   try {
     const response = await fetch('https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,religious,political,racist,sexist,explicit');
     const json = await response.json();
@@ -23,7 +24,7 @@ async function fetchJoke() {
   }
 }
 
-setInterval(fetchJoke, 5000);
+setInterval(fetchGod, 5000);
 
 function loadData(jsonText) {
   try {
@@ -123,6 +124,8 @@ wss.on('connection', function connection(ws) {
                 
                 user = userData;
                 last_click = user.username;
+                positions = data.pbuttons;
+              
                 if (typeof data.add === 'number') {
                   count = count + data.add;
                 } else {
@@ -133,7 +136,8 @@ wss.on('connection', function connection(ws) {
                     type: 'update',
                     count,
                     from: last_click,
-                    joke: last_joke
+                    joke: last_joke,
+                    pbuttons: positions
                 });
             }
 
@@ -142,7 +146,8 @@ wss.on('connection', function connection(ws) {
                 broadcast({
                     type: 'update',
                     count: data.set,
-                    from: last_click
+                    from: last_click,
+                    pbuttons: positions
                 });
             }
             if (data.type === 'deleteAccount') {
@@ -160,12 +165,14 @@ wss.on('connection', function connection(ws) {
             }
             if (data.type === 'ResetDataset') {
                 count = 0;
+                positions = [ [0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1] ];
                 users.clear();
                 
                 broadcast({
                     type: 'update',
                     count,
-                    from: "system"
+                    from: "system",
+                    pbuttons: positions
                 });
                 saveData();
                 
