@@ -2,33 +2,57 @@ const WebSocket = require('ws');
 const http = require('http');
 
 const PORT = process.env.PORT || 8080;
+const CANVAS_SIZE = 189;
+const DEFAULT_COLOR = '#FAFAFA';
 
-const server = http.createServer((req, res) => {
+// Create HTTP server
+const server = http.createServer((_, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
   res.end('WebSocket server is running!');
 });
 
+// Initialize WebSocket server
 const wss = new WebSocket.Server({ server });
 
-const canvas = Array(189).fill().map(() => Array(189).fill('#FAFAFA'));
+// 2D Canvas filled with hex color strings
+const canvas = Array.from({ length: CANVAS_SIZE }, () =>
+  Array.from({ length: CANVAS_SIZE }, () => DEFAULT_COLOR)
+);
 
+// Broadcast helper
+function broadcast(data, exclude) {
+  const message = JSON.stringify(data);
+  for (const client of wss.clients) {
+    if (client !== exclude && client.readyState === WebSocket.OPEN) {
+      client.send(message);
+    }
+  }
+}
+
+// Handle new connections
 wss.on('connection', ws => {
+  // Send full canvas
   ws.send(JSON.stringify({ type: 'init', canvas }));
 
-  ws.on('message', message => {
-    const data = JSON.parse(message);
+  // Handle messages
+  ws.on('message', msg => {
+    let data;
+    try {
+      data = JSON.parse(msg);
+    } catch {
+      return;
+    }
 
     if (data.type === 'pixel') {
       const { x, y, color } = data;
 
-      if (x >= 0 && x < 1000 && y >= 0 && y < 1000) {
+      if (
+        Number.isInteger(x) && x >= 0 && x < CANVAS_SIZE &&
+        Number.isInteger(y) && y >= 0 && y < CANVAS_SIZE &&
+        typeof color === 'string' && /^#[0-9A-Fa-f]{6}$/.test(color)
+      ) {
         canvas[y][x] = color;
-
-        wss.clients.forEach(client => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ type: 'pixel', x, y, color }));
-          }
-        });
+        broadcast({ type: 'pixel', x, y, color }, ws);
       }
     }
   });
