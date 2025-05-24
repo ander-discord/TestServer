@@ -1,138 +1,95 @@
-const net = require('net');
-const { exec } = require('child_process');
-const os = require('os');
+const http = require('http');
+const { Server } = require('socket.io');
+const { randomUUID } = require('crypto');
+
+const server = http.createServer();
+const io = new Server(server, {
+  path: '/ws/socket.io',
+  cors: { origin: '*' }
+});
+
+let onlineUsers = 0;
+let chatHistory = [];
+
+const users = {};
+
+io.use((socket, next) => {
+  const auth = socket.handshake.auth;
+  if (!auth) return next(new Error('No auth data'));
+  
+  socket.data.auth_token = auth.auth_token;
+  next();
+});
+
+io.on('connection', (socket) => {
+  onlineUsers++;
+  io.emit('user_count', onlineUsers);
+  console.log('A user connected');
+
+  socket.on('signup', ({ username, password }) => {
+    if (!username || !password) {
+      socket.emit('system_message', 'Signup failed: username and password required.');
+      return;
+    }
+
+    if (users[username]) {
+      socket.emit('system_message', 'Signup failed: username already exists.');
+    } else {
+      users[username] = { password, token: randomUUID() };
+      socket.emit('signup_success', 'Signup successful! You can now log in.');
+      console.log(`New user signed up: ${username}`);
+    }
+  });
+
+  socket.on('login', ({ username, password }) => {
+    const user = users[username];
+    if (!user || user.password !== password) {
+      socket.emit('system_message', 'Login failed: Invalid username or password.');
+    } else {
+      socket.data.username = username;
+      socket.data.isAuthenticated = true;
+      socket.emit('login_success', { message: 'Login successful', username });
+      socket.emit('chatHistory', chatHistory);
+      console.log(`User logged in: ${username}`);
+    }
+  });
+
+  socket.on('logout', () => {
+    if (socket.data.username) {
+      console.log(`User logged out: ${socket.data.username}`);
+      socket.emit('logout_success', 'You have been logged out.');
+      delete socket.data.username;
+      delete socket.data.isAuthenticated;
+    } else {
+      socket.emit('system_message', 'You are not logged in.');
+    }
+  });
+
+  socket.on('chat_message', (content) => {
+    if (!socket.data.isAuthenticated) {
+      socket.emit('system_message', 'You must be logged in to send messages.');
+      return;
+    }
+
+    const message = {
+      id: randomUUID(),
+      content,
+      fromUser: socket.data.username
+    };;
+    chatHistory.push(message);
+
+    console.log(`Message from ${message.fromUser}: ${message.content}`);
+    io.emit('chat_message', message);
+  });
+
+  socket.on('disconnect', () => {
+    onlineUsers--;
+    io.emit('user_count', onlineUsers);
+    console.log('A user disconnected');
+  });
+});
 
 const PORT = 3000;
-const HOST = '0.0.0.0';
-
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-const privatecommands = [
-  'ip',
-  'ipconfig',
-  'ifconfig',
-  'hostname',
-  'whoami',
-  'netstat',
-  'arp',
-  'route',
-  'getmac',
-  'uname',
-  'env',
-  'set',
-  'systeminfo',
-  'tasklist',
-  'ps',
-  'net user',
-  'net localgroup administrators',
-  'who',
-  'last',
-  'finger',
-  'uptime',
-  'tree',
-];
-
-const dangerousCommands = [
-  'curl',
-  'wget',
-  'powershell',
-  'Invoke-WebRequest',
-  'Invoke-Expression',
-  'certutil',
-  'ftp',
-  'nc',
-  'netcat',
-  'bash',
-  'sh',
-  'python',
-  'perl',
-  'ruby',
-  'mshta',
-  'bitsadmin',
-  'ftpget',
-  'Invoke-Command',
-  'curl -O',
-  'rm -rf /',
-  'del /f /s /q',
-];
-
-const blacklisted = [];
-
-const server = net.createServer((socket) => {
-    const clientIP = socket.remoteAddress;
-    console.log('Client connected | IP:', clientIP);
-
-    if (blacklisted.includes(clientIP)) {
-        socket.write('You are blacklisted (IP) and cannot connect.\n');
-        socket.end();
-        return;
-    }
-
-    socket.write(`Connected to WebShell\n`);
-    socket.write(`Type 'exit' to disconnect\n\n`);
-    socket.write(`$ `);
-
-    socket.on('data', async (data) => {
-        const input = data.toString().trim();
-
-        if (input === 'exit') {
-            socket.write('Disconnecting...\n');
-            socket.end();
-            return;
-        }
-
-        console.log(`Client IP: ${clientIP} | Command: ${input}`)
-        await executeCommand(input, socket);
-    });
-
-    socket.on('end', () => {
-        console.log('Client disconnected');
-    });
-
-    socket.on('error', (err) => {
-        console.error('Socket error:', err);
-    });
-});
-
-async function executeCommand(cmd, socket) {
-    socket.write('\n');
-    await delay(100);
-
-    if (cmd.startsWith("$cmd")) {
-        socket.write("You need to be server-sided\n$ ");
-        return;
-    }
-
-    if (dangerousCommands.some(dc => cmd.startsWith(dc))) {
-        socket.write("Error: This command is blocked.\n$ ");
-        return;
-    }
-
-    if (privatecommands.some(pc => cmd.startsWith(pc))) {
-        socket.write("Warning: This is a private command that runs locally on your computer.\n");
-        await delay(1000);
-        socket.write(`$cmd ${cmd}`);
-        return;
-    }
-
-    exec(cmd, { env: { LANG: 'en_US.UTF-8', LC_ALL: 'en_US.UTF-8' } }, (error, stdout, stderr) => {
-        if (error) {
-            socket.write(`Error: Command not found or failed to execute\n`);
-        }
-        if (stderr) {
-            socket.write(`${stderr}\n`);
-        }
-        if (stdout) {
-            socket.write(`${stdout}\n`);
-        }
-        socket.write(`$ `);
-    });
-}
-
-server.listen(PORT, HOST, () => {
-    console.log(`Server listening on ${HOST}:${PORT}`);
-});
-
-server.on('error', (err) => {
-    console.error('Server error:', err);
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
