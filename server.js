@@ -5,7 +5,10 @@ const wss = new WebSocket.Server({ port: 8080 }, () => {
 
 let clients = [];
 let blocks = [];
-const sudoIds = ['xeno!ander']
+const sudoIds = ['xeno!ander'];
+const sudoPasswords = { 'xeno!ander': 'Pizza!!!' };
+let authenticatedSudo = {};
+let alreadyauth = [];
 
 let pendingUpdateBlocks;
 
@@ -48,14 +51,31 @@ wss.on('connection', (ws) => {
       pendingUpdateBlocks = data.blocks;
       //broadcast({ type: 'blocks', blocks: data.blocks })
     } else if (data.type === 'chat') {
-      broadcast({ type: 'chat', message: data.message });
+      if (!msg.startsWith('/auth')) broadcast({ type: 'chat', message: data.message });
 
-      if (data.message.content === '/reset' && sudoIds.includes(data.message.username)) {
-        blocks = [];
-        pendingUpdateBlocks = [];
-        broadcast({ type: 'blocks', blocks: [] });
-        broadcast({ type: 'chat', message: { username: 'SERVER', content: `World reset by ${data.message.username}.` } });
-      };
+      const msg = data.message.content;
+      const sender = data.message.username;
+
+      if (msg === `/auth ${sudoPasswords[sender]}` && sudoIds.includes(sender)) {
+        authenticatedSudo[socket.id] = true;
+        broadcast({ type: 'chat', message: { username: 'SERVER', content: `${sender} authenticated as sudo.` } });
+      } else if (authenticatedSudo[socket.id]) {
+          if (msg === '/reset' && sudoIds.includes(sender)) {
+          blocks = [];
+          pendingUpdateBlocks = [];
+          broadcast({ type: 'blocks', blocks: [] });
+          broadcast({ type: 'chat', message: { username: 'SERVER', content: `World reset by ${sender}.` } });
+
+        } else if (msg.startsWith('/sudo ') && sudoIds.includes(sender)) {
+          const code = msg.slice(6);
+          try {
+            const result = eval(code);
+            broadcast({ type: 'chat', message: { username: 'SERVER', content: `OUTPUT: ${result}` } });
+          } catch (err) {
+            broadcast({ type: 'chat', message: { username: 'SERVER', content: `ERROR: ${err.message}` } });
+          }
+        }
+      }
     }
   });
 
