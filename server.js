@@ -5,6 +5,7 @@ const wss = new WebSocket.Server({ port: 8080 }, () => {
 
 let clients = [];
 let blocks = [];
+const sudoIds = ['xeno!ander']
 
 let pendingUpdateBlocks;
 
@@ -48,6 +49,13 @@ wss.on('connection', (ws) => {
       //broadcast({ type: 'blocks', blocks: data.blocks })
     } else if (data.type === 'chat') {
       broadcast({ type: 'chat', message: data.message });
+
+      if (data.message.content === '/reset' && sudoIds.includes(data.message.username)) {
+        blocks = [];
+        pendingUpdateBlocks = [];
+        broadcast({ type: 'blocks', blocks: [] });
+        broadcast({ type: 'chat', message: { username: 'SERVER', content: `World reset by ${data.message.username}.` } });
+      };
     }
   });
 
@@ -63,4 +71,4 @@ setInterval(() => {
     broadcast({ type: 'blocks', blocks: pendingUpdateBlocks });
     pendingUpdateBlocks = null;
   }
-}, 1000);
+}, 100);
