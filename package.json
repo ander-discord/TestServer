@@ -2,9 +2,9 @@
   "name": "TestServer",
   "version": "1.0.0",
   "description": "In Fact you not need read this lol",
-  "main": "server.js",
+  "main": "server2.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server2.js"
   },
   "dependencies": {
     "socket.io": "^4.7.5"
