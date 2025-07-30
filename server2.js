@@ -17,7 +17,15 @@ http.createServer((req, res) => {
   console.log(JSON.stringify(query));
 
   if (query.send !== undefined) {
+    if ((query.username.length + query.text.length) > 50) {
+      res.writeHead(403, { 'Content-Type': 'text/plain' });
+      return res.end('Too big');
+    }
     chat.push(`[${query.username}]: ${query.text}`);
+  }
+
+  if (chat.length > 4) {
+    chat = [];
   }
 
   console.log(chat);
