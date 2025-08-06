@@ -4,7 +4,7 @@
   "description": "In Fact you not need read this lol",
   "main": "server2.js",
   "scripts": {
-    "start": "node server2.js"
+    "start": "node server3.js"
   },
   "dependencies": {
     "socket.io": "^4.7.5"
