@@ -21,29 +21,8 @@ const server = http.createServer((req, res) => {
   const path = url.pathname;
   const parts = path.split('/').filter(Boolean);
 
-  const user = users[query.token];
-  if (!query.token || !user) {
-    return res.end('Needed user token & that need be valid');
-  }
-
-  const cacheKey = path + url.search;
-  if (!query.send && user.old_access.path === cacheKey) {
-    res.writeHead(200, { 'Content-Type': 'text/plain', 'Refresh': 0.1 });
-    return res.end(user.old_access.content);
-  }
-
-  function end(rw, r = null) {
-    if (r) res.writeHead(200, { 'Content-Type': 'text/plain', 'Refresh': r });
-    else res.writeHead(200, { 'Content-Type': 'text/plain' });
-
-    user.old_access.path = cacheKey;
-    user.old_access.content = rw;
-    res.end(rw);
-  }
-
-  try {
-    if (parts[0] === 'how') {
-      return res.end(`📘 HOW TO USE THIS CHAT SYSTEM:
+  if (parts[0] === 'how') {
+    return res.end(`HOW TO USE:
 
 SIGN UP:
       /signup?username=NAME&password=PASS
@@ -83,6 +62,28 @@ VIEW ALL DMs:
       Lists DM threads you’re in
     `);
     }
+
+  const user = users[query.token];
+  if (!query.token || !user) {
+    return res.end('Needed user token & that need be valid');
+  }
+
+  const cacheKey = path + url.search;
+  if (!query.send && user.old_access.path === cacheKey) {
+    res.writeHead(200, { 'Content-Type': 'text/plain', 'Refresh': 0.1 });
+    return res.end(user.old_access.content);
+  }
+
+  function end(rw, r = null) {
+    if (r) res.writeHead(200, { 'Content-Type': 'text/plain', 'Refresh': r });
+    else res.writeHead(200, { 'Content-Type': 'text/plain' });
+
+    user.old_access.path = cacheKey;
+    user.old_access.content = rw;
+    res.end(rw);
+  }
+
+  try {
 
     // signup
     if (parts[0] === 'signup') {
