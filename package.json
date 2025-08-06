@@ -2,7 +2,7 @@
   "name": "TestServer",
   "version": "1.0.0",
   "description": "In Fact you not need read this lol",
-  "main": "server2.js",
+  "main": "server3.js",
   "scripts": {
     "start": "node server3.js"
   },
