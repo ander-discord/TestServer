@@ -1,15 +1,17 @@
 {
-  "name": "TestServer",
-  "version": "1.0.0",
-  "description": "In Fact you not need read this lol",
+  "name": "package",
+  "version": "1.2.0",
+  "description": "hi",
   "main": "server3.js",
   "scripts": {
     "start": "node server3.js"
   },
+  "type": "commonjs",
   "dependencies": {
-    "socket.io": "^4.7.5"
+    "dotenv": "^16.4.5",
+    "mongodb": "^6.5.0"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=16.0.0"
   }
 }
