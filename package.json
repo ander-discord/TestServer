@@ -2,9 +2,9 @@
   "name": "package",
   "version": "1.2.0",
   "description": "hi",
-  "main": "server3.js",
+  "main": "server1.js",
   "scripts": {
-    "start": "node server3.js"
+    "start": "node server1.js"
   },
   "type": "commonjs",
   "dependencies": {
