@@ -39,7 +39,7 @@ wss.on('connection', (ws) => {
       return;
     }
 
-    if (data.type === 'move') {
+    if (data.type === 'player') {
       const client = clients.find(c => c.id === data.id);
       if (client) {
         client.player = data.player;
@@ -51,6 +51,8 @@ wss.on('connection', (ws) => {
       pendingUpdateBlocks = data.blocks;
     } else if (data.type === 'chat') {
       broadcast({ type: 'chat', message: data.message });
+    } else if (data.type === 'damage') {
+      broadcast({ type: 'damage', target: data.target, amount: data.amount });
     }
   });
 
